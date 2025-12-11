@@ -31,13 +31,6 @@ class PixelTerm:
         # 按键序列缓冲区
         self.key_buffer = ""
         
-        # 图片加载状态标志
-        self.is_loading = False
-        
-        # 按键统计
-        self.key_press_count = 0
-        self.key_processed_count = 0
-        
         # 设置初始路径
         if path:
             path_obj = Path(path)
@@ -104,15 +97,6 @@ class PixelTerm:
                 # 直接读取按键，不使用select检测
                 key = self.interface.get_key()
                 if key:
-                    # 记录按键次数
-                    self.key_press_count += 1
-                    key_repr = repr(key)  # 用于显示特殊字符
-                    
-                    # 如果正在加载，直接忽略所有按键
-                    if self.is_loading:
-                        print(f"\n[DEBUG] 按键忽略: 按下{self.key_press_count}次，处理{self.key_processed_count}次，加载中忽略按键: {key_repr}")
-                        continue
-                    
                     # 将按键添加到缓冲区
                     self.key_buffer += key
                     
@@ -121,22 +105,16 @@ class PixelTerm:
                     
                     if handled:
                         # 如果处理成功，清空缓冲区
-                        self.key_processed_count += 1
-                        print(f"\n[DEBUG] 按键处理: 按下{self.key_press_count}次，处理{self.key_processed_count}次，当前按键: {key_repr}")
                         self.key_buffer = ""
                     elif len(self.key_buffer) > 10:
                         # 如果缓冲区太长且没被处理，清空
-                        print(f"\n[DEBUG] 按键忽略: 按下{self.key_press_count}次，处理{self.key_processed_count}次，缓冲区过长清空")
                         self.key_buffer = ""
                     elif not self.key_buffer.startswith('\x1b'):
                         # 如果不是ESC序列开头，直接处理单个字符
-                        if self.input_handler.handle_input(key):
-                            self.key_processed_count += 1
-                            print(f"\n[DEBUG] 按键处理: 按下{self.key_press_count}次，处理{self.key_processed_count}次，当前按键: {key_repr}")
+                        self.input_handler.handle_input(key)
                         self.key_buffer = ""
                     elif len(self.key_buffer) >= 3 and not self.input_handler.handle_input(self.key_buffer):
                         # 如果是ESC序列且长度>=3但未被处理，可能是无效序列，清空
-                        print(f"\n[DEBUG] 按键忽略: 按下{self.key_press_count}次，处理{self.key_processed_count}次，无效ESC序列清空")
                         self.key_buffer = ""
         
         finally:
@@ -144,46 +122,29 @@ class PixelTerm:
     
     def refresh_display(self, clear_first: bool = True):
         """刷新显示"""
-        try:
-            current_image = self.file_browser.get_current_image()
-            if current_image:
-                print(f"\n[DEBUG] 开始显示图片: {current_image.name}")
-                # 显示图片
-                self.image_viewer.display_image_with_info(
-                    str(current_image), 
-                    self.display_options.get_scale(),
-                    clear_first
-                )
-                print(f"\n[DEBUG] 图片显示完成")
-            else:
-                if clear_first:
-                    self.interface.clear_screen()
-                print("No images found")
-        finally:
-            self.is_loading = False  # 只在刷新完成后重置状态
+        current_image = self.file_browser.get_current_image()
+        if current_image:
+            # 显示图片
+            self.image_viewer.display_image_with_info(
+                str(current_image), 
+                self.display_options.get_scale(),
+                clear_first
+            )
+        else:
+            if clear_first:
+                self.interface.clear_screen()
+            print("No images found")
     
     def next_image(self):
         """下一张图片"""
-        # 不管当前状态如何，只要调用就立即设置加载状态
-        self.is_loading = True
-        print(f"\n[DEBUG] 开始加载下一张图片，设置is_loading=True")
         if self.file_browser.next_image():
             self.refresh_display(clear_first=True)
-        else:
-            self.is_loading = False  # 如果没有下一张图片，重置状态
-            print(f"\n[DEBUG] 没有下一张图片，设置is_loading=False")
         return True
     
     def previous_image(self):
         """上一张图片"""
-        # 不管当前状态如何，只要调用就立即设置加载状态
-        self.is_loading = True
-        print(f"\n[DEBUG] 开始加载上一张图片，设置is_loading=True")
         if self.file_browser.previous_image():
             self.refresh_display(clear_first=True)
-        else:
-            self.is_loading = False  # 如果没有上一张图片，重置状态
-            print(f"\n[DEBUG] 没有上一张图片，设置is_loading=False")
         return True
     
     def zoom_in(self):
