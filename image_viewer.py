@@ -96,9 +96,8 @@ class ImageViewer:
         print('\033[H', end='', flush=True)
         # 清除整个屏幕
         print('\033[2J', end='', flush=True)
-        # 或者精确清除指定行数
-        # for _ in range(term_height):
-        #     print('\033[K')  # 清除从光标到行尾
+        # 立即刷新输出，确保清屏命令立即生效
+        sys.stdout.flush()
     
     def display_image_with_info(self, filepath: str, scale: float = 1.0, clear_first: bool = True) -> bool:
         """显示图片"""

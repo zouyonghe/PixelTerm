@@ -125,7 +125,6 @@ class PixelTerm:
     
     def refresh_display(self, clear_first: bool = True):
         """刷新显示"""
-        self.is_loading = True
         try:
             current_image = self.file_browser.get_current_image()
             if current_image:
@@ -140,18 +139,26 @@ class PixelTerm:
                     self.interface.clear_screen()
                 print("No images found")
         finally:
-            self.is_loading = False
+            self.is_loading = False  # 只在刷新完成后重置状态
     
     def next_image(self):
         """下一张图片"""
-        if not self.is_loading and self.file_browser.next_image():
-            self.refresh_display(clear_first=True)
+        if not self.is_loading:
+            self.is_loading = True  # 立即设置加载状态
+            if self.file_browser.next_image():
+                self.refresh_display(clear_first=True)
+            else:
+                self.is_loading = False  # 如果没有下一张图片，重置状态
         return True
     
     def previous_image(self):
         """上一张图片"""
-        if not self.is_loading and self.file_browser.previous_image():
-            self.refresh_display(clear_first=True)
+        if not self.is_loading:
+            self.is_loading = True  # 立即设置加载状态
+            if self.file_browser.previous_image():
+                self.refresh_display(clear_first=True)
+            else:
+                self.is_loading = False  # 如果没有上一张图片，重置状态
         return True
     
     def zoom_in(self):
