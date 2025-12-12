@@ -6,6 +6,7 @@ PixelTerm - 终端图片浏览器主程序
 import sys
 import os
 import signal
+import argparse
 from pathlib import Path
 from constants import KEY_LEFT, KEY_RIGHT, KEY_LEFT_ALT, KEY_RIGHT_ALT, KEY_CTRL_C, ERR_CHAFA_NOT_FOUND, ERR_CHAFA_INSTALL_HINT
 from exceptions import ChafaNotFoundError
@@ -86,7 +87,11 @@ class PixelTerm:
     
     def run(self):
         """运行主循环"""
-        self.interface.setup_terminal()
+        # 检查是否有图片，如果没有就不设置终端模式
+        has_images = self.file_browser.get_current_image() is not None
+        
+        if has_images:
+            self.interface.setup_terminal()
         
         # 记录上次的终端大小
         last_term_size = self.image_viewer.get_terminal_size()
@@ -94,7 +99,7 @@ class PixelTerm:
         try:
             self.refresh_display()
             
-            while self.input_handler.running:
+            while self.input_handler.running and has_images:
                 # 检查终端大小是否改变
                 current_term_size = self.image_viewer.get_terminal_size()
                 if current_term_size != last_term_size:
@@ -126,7 +131,8 @@ class PixelTerm:
                         self.key_buffer = ""
         
         finally:
-            self.interface.restore_terminal()
+            if has_images:
+                self.interface.restore_terminal()
     
     def refresh_display(self, clear_first: bool = True):
         """刷新显示"""
@@ -142,9 +148,32 @@ class PixelTerm:
             
             
         else:
-            if clear_first:
-                self.interface.clear_screen()
             print("No images found")
+            print()
+            # 显示使用帮助并退出
+            parser = argparse.ArgumentParser(
+                description='PixelTerm - Terminal Image Viewer',
+                formatter_class=argparse.RawDescriptionHelpFormatter,
+                epilog="""
+Usage examples:
+  %(prog)s                    # Browse images in current directory
+  %(prog)s /path/to/images    # Browse images in specified directory
+  %(prog)s image.jpg          # Display specified image directly
+  %(prog)s --no-preload       # Disable preloading for faster startup
+  %(prog)s --help             # Show help information
+
+Shortcuts:
+  ←/→        Previous/Next image
+  a/d        Alternative left/right keys
+  i          Show detailed image information
+  q          Quit program
+  Ctrl+C     Force exit
+            """)
+            parser.add_argument('path', nargs='?', help='Image file or directory path')
+            parser.add_argument('--no-preload', action='store_false', dest='preload_enabled', 
+                                help='Disable preloading feature (enabled by default)')
+            parser.print_help()
+            self.input_handler.stop()
     
     
     
@@ -184,11 +213,7 @@ class PixelTerm:
         self.refresh_display()
         return True
     
-    def show_help(self):
-        """显示帮助"""
-        self.interface.show_help()
-        self.refresh_display()
-        return True
+    
     
     def show_image_info(self):
         """显示图片信息"""

@@ -61,12 +61,7 @@ class Interface:
         except:
             return None
     
-    def show_help(self):
-        """显示帮助信息"""
-        self.clear_screen()
-        print(self.help_text)
-        print("\nPress any key to continue...")
-        self.wait_for_key()
+    
     
     def wait_for_key(self):
         """等待按键"""
@@ -234,6 +229,6 @@ if __name__ == "__main__":
     interface.setup_terminal()
     
     try:
-        interface.show_help()
+        print(interface.help_text)
     finally:
         interface.restore_terminal()

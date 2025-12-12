@@ -1,0 +1,3 @@
+#!/bin/bash
+# PixelTerm 启动脚本
+/home/buding/mambaforge/envs/chafa/bin/python /home/buding/Git/PixelTerm/pixelterm.py "$@"
