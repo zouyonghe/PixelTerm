@@ -111,6 +111,15 @@ PixelTerm/
 - **License**: MIT License
 - **Repository**: https://github.com/zouyonghe/PixelTerm
 
+## 🔗 Related Projects
+
+### PixelTerm-C
+A C implementation of PixelTerm with better performance and lower resource usage. 
+
+- **Repository**: https://github.com/zouyonghe/PixelTerm-C
+- **Features**: Native C implementation, faster image processing, smaller memory footprint
+- **Ideal for**: Systems with limited resources or users seeking maximum performance
+
 ## 🎯 Design Philosophy
 
 - **Minimalism** - Focus on core functionality, remove redundant information

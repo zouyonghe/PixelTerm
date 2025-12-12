@@ -111,6 +111,15 @@ PixelTerm/
 - **开源协议**: MIT License
 - **仓库地址**: https://github.com/zouyonghe/PixelTerm
 
+## 🔗 相关项目
+
+### PixelTerm-C
+PixelTerm 的 C 语言实现版本，具有更好的性能和更低的资源占用。
+
+- **仓库地址**: https://github.com/zouyonghe/PixelTerm-C
+- **特性**: 原生 C 实现，更快的图片处理，更小的内存占用
+- **适用场景**: 资源有限的系统或追求极致性能的用户
+
 ## 🎯 设计理念
 
 - **极简主义** - 专注核心功能，去除冗余信息
