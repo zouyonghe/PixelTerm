@@ -6,6 +6,9 @@ PixelTerm 文件浏览器模块
 
 import os
 import sys
+import tempfile
+import hashlib
+import shutil
 from typing import List, Optional, Dict
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
@@ -21,10 +24,14 @@ class FileBrowser:
         self.image_files: List[Path] = []
         self.current_index = 0
         
-        # chafa预渲染缓存
+        # chafa预渲染缓存 - 内存中只保留当前图片及前后各一张
         self.render_cache: Dict[Path, str] = {}
         self.preload_size = DEFAULT_PRELOAD_SIZE
         self.preload_enabled = True
+        
+        # 临时文件缓存目录
+        self.temp_dir = tempfile.mkdtemp(prefix="pixelterm_cache_")
+        self.file_cache_range = 10  # 前后10张图存储到临时文件
         
         # 线程池用于预渲染
         self.render_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="chafa_render")
@@ -92,7 +99,10 @@ class FileBrowser:
     def refresh_file_list(self):
         """刷新当前目录的图片文件列表"""
         self.image_files.clear()
-        self.render_cache.clear()  # 清空预渲染缓存
+        self.render_cache.clear()  # 清空内存缓存
+        
+        # 清理临时文件缓存
+        self._clear_temp_cache()
         
         try:
             for item in self.current_directory.iterdir():
@@ -125,34 +135,134 @@ class FileBrowser:
         """预渲染工作线程"""
         import time
         try:
-            # 预渲染当前图片前后各几张
-            start_idx = max(0, self.current_index - self.preload_size)
-            end_idx = min(len(self.image_files), self.current_index + self.preload_size + 1)
+            # 预渲染当前图片前后各10张到临时文件
+            start_idx = max(0, self.current_index - self.file_cache_range)
+            end_idx = min(len(self.image_files), self.current_index + self.file_cache_range + 1)
             
             for i in range(start_idx, end_idx):
                 if i != self.current_index:  # 跳过当前图片
                     img_path = self.image_files[i]
-                    if img_path not in self.render_cache:
+                    
+                    # 检查是否已经缓存到临时文件
+                    if not self._get_cache_file_path(img_path).exists():
                         try:
                             # 使用ChafaWrapper预渲染
                             rendered = ChafaWrapper.render_image(str(img_path))
                             if rendered:
-                                self.render_cache[img_path] = rendered
+                                # 保存到临时文件
+                                self._save_to_temp_cache(img_path, rendered)
+                                
+                                # 如果在内存缓存范围内，也保存到内存
+                                if self._is_in_memory_range(img_path):
+                                    self.render_cache[img_path] = rendered
                             
                             time.sleep(PRELOAD_SLEEP_TIME)  # 避免占用过多CPU
                         except Exception:
                             pass  # 忽略渲染失败的图片
+            
+            # 清理内存缓存，只保留当前图片及前后各一张
+            self._cleanup_memory_cache()
+            
         except Exception:
             pass  # 忽略预渲染错误
     
+    def _cleanup_memory_cache(self):
+        """清理内存缓存，只保留当前图片及前后各一张"""
+        if not self.image_files:
+            return
+        
+        # 找出应该保留在内存中的图片
+        to_keep = set()
+        start_idx = max(0, self.current_index - 1)
+        end_idx = min(len(self.image_files), self.current_index + 2)
+        
+        for i in range(start_idx, end_idx):
+            to_keep.add(self.image_files[i])
+        
+        # 清理不在保留范围内的内存缓存
+        to_remove = []
+        for img_path in self.render_cache:
+            if img_path not in to_keep:
+                to_remove.append(img_path)
+        
+        for img_path in to_remove:
+            del self.render_cache[img_path]
+    
+    def _get_cache_file_path(self, img_path: Path) -> Path:
+        """获取图片对应的缓存文件路径"""
+        # 使用文件路径的哈希值作为缓存文件名，避免路径过长和特殊字符问题
+        path_str = str(img_path.absolute())
+        hash_obj = hashlib.md5(path_str.encode())
+        cache_filename = f"{hash_obj.hexdigest()}.txt"
+        return Path(self.temp_dir) / cache_filename
+    
+    def _clear_temp_cache(self):
+        """清理临时文件缓存"""
+        try:
+            if hasattr(self, 'temp_dir') and self.temp_dir and os.path.exists(self.temp_dir):
+                shutil.rmtree(self.temp_dir)
+            self.temp_dir = tempfile.mkdtemp(prefix="pixelterm_cache_")
+        except Exception:
+            pass
+    
+    def _save_to_temp_cache(self, img_path: Path, rendered_data: str):
+        """保存渲染数据到临时文件"""
+        try:
+            cache_file = self._get_cache_file_path(img_path)
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                f.write(rendered_data)
+        except Exception:
+            pass
+    
+    def _load_from_temp_cache(self, img_path: Path) -> Optional[str]:
+        """从临时文件加载渲染数据"""
+        try:
+            cache_file = self._get_cache_file_path(img_path)
+            if cache_file.exists():
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    return f.read()
+        except Exception:
+            pass
+        return None
+    
+    def _is_in_memory_range(self, img_path: Path) -> bool:
+        """判断图片是否应该在内存缓存范围内（当前图片及前后各一张）"""
+        if not self.image_files:
+            return False
+        
+        try:
+            img_index = self.image_files.index(img_path)
+            return abs(img_index - self.current_index) <= 1
+        except ValueError:
+            return False
+    
     def get_rendered_image(self, img_path: Path) -> Optional[str]:
         """获取预渲染的图片数据"""
-        return self.render_cache.get(img_path)
+        # 首先检查内存缓存
+        if img_path in self.render_cache:
+            return self.render_cache[img_path]
+        
+        # 如果不在内存缓存中，尝试从临时文件加载
+        cached_data = self._load_from_temp_cache(img_path)
+        if cached_data:
+            # 如果图片在内存缓存范围内，加载到内存
+            if self._is_in_memory_range(img_path):
+                self.render_cache[img_path] = cached_data
+            return cached_data
+        
+        return None
     
     def cleanup(self):
         """清理资源"""
         if hasattr(self, 'render_executor'):
             self.render_executor.shutdown(wait=False)
+        
+        # 清理临时文件缓存
+        try:
+            if hasattr(self, 'temp_dir') and self.temp_dir and os.path.exists(self.temp_dir):
+                shutil.rmtree(self.temp_dir)
+        except Exception:
+            pass
     
     def is_image_file(self, filepath: Path) -> bool:
         """检查是否为支持的图片格式"""
@@ -174,6 +284,10 @@ class FileBrowser:
             return False
         
         self.current_index = (self.current_index + 1) % len(self.image_files)
+        
+        # 更新内存缓存，确保当前图片在内存中
+        self._update_memory_cache_on_switch()
+        
         # 触发预渲染
         self.preload_renders()
         return True
@@ -184,14 +298,40 @@ class FileBrowser:
             return False
         
         self.current_index = (self.current_index - 1) % len(self.image_files)
+        
+        # 更新内存缓存，确保当前图片在内存中
+        self._update_memory_cache_on_switch()
+        
         # 触发预渲染
         self.preload_renders()
         return True
+    
+    def _update_memory_cache_on_switch(self):
+        """切换图片时更新内存缓存"""
+        if not self.image_files:
+            return
+        
+        # 确保当前图片在内存缓存中
+        current_img = self.get_current_image()
+        if current_img and current_img not in self.render_cache:
+            # 尝试从临时文件加载
+            cached_data = self._load_from_temp_cache(current_img)
+            if cached_data:
+                self.render_cache[current_img] = cached_data
+        
+        # 清理不在内存范围内的缓存
+        self._cleanup_memory_cache()
     
     def jump_to_image(self, index: int) -> bool:
         """跳转到指定索引的图片"""
         if 0 <= index < len(self.image_files):
             self.current_index = index
+            
+            # 更新内存缓存，确保当前图片在内存中
+            self._update_memory_cache_on_switch()
+            
+            # 触发预渲染
+            self.preload_renders()
             return True
         return False
     
