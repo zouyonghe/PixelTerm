@@ -8,6 +8,7 @@ import os
 import sys
 import termios
 import tty
+from contextlib import contextmanager
 from typing import Optional, Callable
 
 
@@ -95,71 +96,75 @@ class Interface:
         for i, file_info in enumerate(files):
             print(file_info)
     
-    def show_image_info(self, image_path, total_count: int, current_index: int):
-        """显示图片详细信息"""
-        import os
-        from PIL import Image
-        
-        # 临时恢复终端模式以获取正常输入
+    @contextmanager
+    def _terminal_mode_switch(self):
+        """终端模式切换上下文管理器"""
         temp_settings = self.old_settings
-        if self.old_settings:
-            self.restore_terminal()
-        
         try:
-            print(f"\n{'='*60}")
-            print(f"📸 图片详细信息")
-            print(f"{'='*60}")
-            
-            # 基本信息
-            print(f"📁 文件名: {image_path.name}")
-            print(f"📂 路径: {image_path.parent}")
-            print(f"📄 索引: {current_index + 1}/{total_count}")
-            
-            # 文件大小
-            file_size = os.path.getsize(image_path)
-            if file_size < 1024:
-                size_str = f"{file_size} B"
-            elif file_size < 1024 * 1024:
-                size_str = f"{file_size / 1024:.1f} KB"
-            elif file_size < 1024 * 1024 * 1024:
-                size_str = f"{file_size / (1024 * 1024):.1f} MB"
-            else:
-                size_str = f"{file_size / (1024 * 1024 * 1024):.1f} GB"
-            print(f"💾 文件大小: {size_str}")
-            
-            # 图片尺寸和格式信息
-            try:
-                with Image.open(image_path) as img:
-                    width, height = img.size
-                    print(f"📐 尺寸: {width} x {height} 像素")
-                    print(f"🎨 格式: {img.format}")
-                    print(f"🎭 颜色模式: {img.mode}")
-                    
-                    # 计算宽高比
-                    if height > 0:
-                        aspect_ratio = width / height
-                        print(f"📏 宽高比: {aspect_ratio:.2f}")
-                    
-                    # 如果有EXIF信息，显示一些基本信息
-                    if hasattr(img, '_getexif') and img._getexif():
-                        exif = img._getexif()
-                        if exif:
-                            print(f"📷 包含EXIF信息")
-            except Exception as e:
-                print(f"❌ 无法读取图片信息: {e}")
-            
-            print(f"{'='*60}")
-            
-        except Exception as e:
-            print(f"\n❌ 显示信息时出错: {e}")
+            if self.old_settings:
+                self.restore_terminal()
+            yield
         finally:
-            # 恢复原始模式
             if temp_settings:
                 try:
                     self.old_settings = temp_settings
                     tty.setraw(sys.stdin.fileno())
                 except:
                     self.old_settings = None
+    
+    def show_image_info(self, image_path, total_count: int, current_index: int):
+        """显示图片详细信息"""
+        import os
+        from PIL import Image
+        
+        with self._terminal_mode_switch():
+            try:
+                print(f"\n{'='*60}")
+                print(f"📸 图片详细信息")
+                print(f"{'='*60}")
+                
+                # 基本信息
+                print(f"📁 文件名: {image_path.name}")
+                print(f"📂 路径: {image_path.parent}")
+                print(f"📄 索引: {current_index + 1}/{total_count}")
+                
+                # 文件大小
+                file_size = os.path.getsize(image_path)
+                if file_size < 1024:
+                    size_str = f"{file_size} B"
+                elif file_size < 1024 * 1024:
+                    size_str = f"{file_size / 1024:.1f} KB"
+                elif file_size < 1024 * 1024 * 1024:
+                    size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                else:
+                    size_str = f"{file_size / (1024 * 1024 * 1024):.1f} GB"
+                print(f"💾 文件大小: {size_str}")
+                
+                # 图片尺寸和格式信息
+                try:
+                    with Image.open(image_path) as img:
+                        width, height = img.size
+                        print(f"📐 尺寸: {width} x {height} 像素")
+                        print(f"🎨 格式: {img.format}")
+                        print(f"🎭 颜色模式: {img.mode}")
+                        
+                        # 计算宽高比
+                        if height > 0:
+                            aspect_ratio = width / height
+                            print(f"📏 宽高比: {aspect_ratio:.2f}")
+                        
+                        # 如果有EXIF信息，显示一些基本信息
+                        if hasattr(img, '_getexif') and img._getexif():
+                            exif = img._getexif()
+                            if exif:
+                                print(f"📷 包含EXIF信息")
+                except Exception as e:
+                    print(f"❌ 无法读取图片信息: {e}")
+                
+                print(f"{'='*60}")
+                
+            except Exception as e:
+                print(f"\n❌ 显示信息时出错: {e}")
     
     def show_directory_list(self, directories: list):
         """显示目录列表"""
@@ -174,87 +179,39 @@ class Interface:
     
     def prompt_directory(self) -> Optional[str]:
         """提示输入目录名"""
-        # 临时恢复终端模式以获取正常输入
-        temp_settings = self.old_settings
-        if self.old_settings:
-            self.restore_terminal()
-        
-        try:
-            dirname = input("输入目录名: ").strip()
-            return dirname if dirname else None
-        except:
-            return None
-        finally:
-            # 恢复原始模式
-            if temp_settings:
-                try:
-                    self.old_settings = temp_settings
-                    tty.setraw(sys.stdin.fileno())
-                except:
-                    self.old_settings = None
+        with self._terminal_mode_switch():
+            try:
+                dirname = input("输入目录名: ").strip()
+                return dirname if dirname else None
+            except:
+                return None
     
     def confirm_exit(self) -> bool:
         """确认退出"""
-        # 临时恢复终端模式以获取正常输入
-        temp_settings = self.old_settings
-        if self.old_settings:
-            self.restore_terminal()
-        
-        try:
-            response = input("\n确定要退出吗? (y/N): ").strip().lower()
-            return response == 'y' or response == 'yes'
-        except:
-            return False
-        finally:
-            # 恢复原始模式
-            if temp_settings:
-                try:
-                    self.old_settings = temp_settings
-                    tty.setraw(sys.stdin.fileno())
-                except:
-                    self.old_settings = None
+        with self._terminal_mode_switch():
+            try:
+                response = input("\n确定要退出吗? (y/N): ").strip().lower()
+                return response == 'y' or response == 'yes'
+            except:
+                return False
     
     def show_error(self, message: str):
         """显示错误信息"""
-        # 临时恢复终端模式以获取正常输入
-        temp_settings = self.old_settings
-        if self.old_settings:
-            self.restore_terminal()
-        
-        try:
-            print(f"\n❌ 错误: {message}")
-            input("按任意键继续...")
-        except:
-            pass
-        finally:
-            # 恢复原始模式
-            if temp_settings:
-                try:
-                    self.old_settings = temp_settings
-                    tty.setraw(sys.stdin.fileno())
-                except:
-                    self.old_settings = None
+        with self._terminal_mode_switch():
+            try:
+                print(f"\n❌ 错误: {message}")
+                input("按任意键继续...")
+            except:
+                pass
     
     def show_info(self, message: str):
         """显示信息"""
-        # 临时恢复终端模式以获取正常输入
-        temp_settings = self.old_settings
-        if self.old_settings:
-            self.restore_terminal()
-        
-        try:
-            print(f"\nℹ️  {message}")
-            input("按任意键继续...")
-        except:
-            pass
-        finally:
-            # 恢复原始模式
-            if temp_settings:
-                try:
-                    self.old_settings = temp_settings
-                    tty.setraw(sys.stdin.fileno())
-                except:
-                    self.old_settings = None
+        with self._terminal_mode_switch():
+            try:
+                print(f"\nℹ️  {message}")
+                input("按任意键继续...")
+            except:
+                pass
 
 
 class InputHandler:

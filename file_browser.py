@@ -6,8 +6,11 @@ PixelTerm 文件浏览器模块
 
 import os
 import sys
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+from constants import SUPPORTED_FORMATS, DEFAULT_PRELOAD_SIZE, PRELOAD_SLEEP_TIME
+from chafa_wrapper import ChafaWrapper
 
 
 class FileBrowser:
@@ -17,12 +20,14 @@ class FileBrowser:
         self.current_directory = Path.cwd()
         self.image_files: List[Path] = []
         self.current_index = 0
-        self.supported_formats = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
         
         # chafa预渲染缓存
         self.render_cache: Dict[Path, str] = {}
-        self.preload_size = 10  # 预加载前后各10张图片
-        self.preload_enabled = True  # 预加载开关
+        self.preload_size = DEFAULT_PRELOAD_SIZE
+        self.preload_enabled = True
+        
+        # 线程池用于预渲染
+        self.render_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="chafa_render")
     
     def set_directory(self, directory: str) -> bool:
         """设置当前目录"""
@@ -109,59 +114,49 @@ class FileBrowser:
         if not self.image_files or not self.preload_enabled:
             return
         
-        import threading
-        import subprocess
-        import time
-        
-        def render_worker():
-            """预渲染工作线程"""
-            try:
-                # 预渲染当前图片前后各几张
-                start_idx = max(0, self.current_index - self.preload_size)
-                end_idx = min(len(self.image_files), self.current_index + self.preload_size + 1)
-                
-                for i in range(start_idx, end_idx):
-                    if i != self.current_index:  # 跳过当前图片
-                        img_path = self.image_files[i]
-                        if img_path not in self.render_cache:
-                            try:
-                                # 使用chafa预渲染
-                                cmd = [
-                                    'chafa',
-                                    '--color-space', 'rgb',
-                                    '--dither', 'none',
-                                    '--relative', 'off',
-                                    '--optimize', '9',
-                                    '--margin-right', '0',
-                                    '--work', '9',
-                                    str(img_path)
-                                ]
-                                
-                                result = subprocess.run(cmd, capture_output=True, text=True)
-                                if result.returncode == 0:
-                                    self.render_cache[img_path] = result.stdout
-                                
-                                time.sleep(0.05)  # 避免占用过多CPU
-                            except Exception:
-                                pass  # 忽略渲染失败的图片
-            except Exception:
-                pass  # 忽略预渲染错误
-        
-        # 启动预渲染线程
-        render_thread = threading.Thread(target=render_worker, daemon=True)
-        render_thread.start()
+        # 提交预渲染任务到线程池
+        self.render_executor.submit(self._render_worker)
     
     def get_preload_status(self):
         """获取预加载状态"""
         return self.preload_enabled
     
+    def _render_worker(self):
+        """预渲染工作线程"""
+        import time
+        try:
+            # 预渲染当前图片前后各几张
+            start_idx = max(0, self.current_index - self.preload_size)
+            end_idx = min(len(self.image_files), self.current_index + self.preload_size + 1)
+            
+            for i in range(start_idx, end_idx):
+                if i != self.current_index:  # 跳过当前图片
+                    img_path = self.image_files[i]
+                    if img_path not in self.render_cache:
+                        try:
+                            # 使用ChafaWrapper预渲染
+                            rendered = ChafaWrapper.render_image(str(img_path))
+                            if rendered:
+                                self.render_cache[img_path] = rendered
+                            
+                            time.sleep(PRELOAD_SLEEP_TIME)  # 避免占用过多CPU
+                        except Exception:
+                            pass  # 忽略渲染失败的图片
+        except Exception:
+            pass  # 忽略预渲染错误
+    
     def get_rendered_image(self, img_path: Path) -> Optional[str]:
         """获取预渲染的图片数据"""
         return self.render_cache.get(img_path)
     
+    def cleanup(self):
+        """清理资源"""
+        if hasattr(self, 'render_executor'):
+            self.render_executor.shutdown(wait=False)
+    
     def is_image_file(self, filepath: Path) -> bool:
         """检查是否为支持的图片格式"""
-        return filepath.suffix.lower() in self.supported_formats
+        return filepath.suffix.lower() in SUPPORTED_FORMATS
     
     def get_image_count(self) -> int:
         """获取当前目录图片数量"""

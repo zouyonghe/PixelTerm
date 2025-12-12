@@ -8,6 +8,7 @@ import os
 import json
 from typing import Dict, Any, Optional
 from pathlib import Path
+from constants import DEFAULT_SCALE, SCALE_STEP, MIN_SCALE, MAX_SCALE
 
 
 class Config:
@@ -17,10 +18,10 @@ class Config:
         self.config_file = Path.home() / '.pixelterm' / 'config.json'
         self.default_config = {
             'display': {
-                'default_scale': 1.0,
-                'scale_step': 0.1,
-                'min_scale': 0.1,
-                'max_scale': 3.0,
+                'default_scale': DEFAULT_SCALE,
+                'scale_step': SCALE_STEP,
+                'min_scale': MIN_SCALE,
+                'max_scale': MAX_SCALE,
                 'auto_fit': True,
                 'preserve_aspect_ratio': True
             },

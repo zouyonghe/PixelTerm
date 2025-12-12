@@ -7,6 +7,8 @@ import sys
 import os
 import signal
 from pathlib import Path
+from constants import KEY_LEFT, KEY_RIGHT, KEY_LEFT_ALT, KEY_RIGHT_ALT, KEY_CTRL_C, ERR_CHAFA_NOT_FOUND, ERR_CHAFA_INSTALL_HINT
+from exceptions import ChafaNotFoundError
 
 # 添加当前目录到Python路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -62,13 +64,13 @@ class PixelTerm:
     def setup_key_handlers(self):
         """设置键盘事件处理器"""
         self.input_handler.register_handler('q', self.quit)
-        self.input_handler.register_handler('\x03', self.quit)  # Ctrl+C
+        self.input_handler.register_handler(KEY_CTRL_C, self.quit)  # Ctrl+C
         
         # 导航键
-        self.input_handler.register_handler('\x1b[D', self.previous_image)  # 左箭头
-        self.input_handler.register_handler('\x1b[C', self.next_image)     # 右箭头
-        self.input_handler.register_handler('\x1bOD', self.previous_image) # 左箭头 (某些终端)
-        self.input_handler.register_handler('\x1bOC', self.next_image)    # 右箭头 (某些终端)
+        self.input_handler.register_handler(KEY_LEFT, self.previous_image)  # 左箭头
+        self.input_handler.register_handler(KEY_RIGHT, self.next_image)     # 右箭头
+        self.input_handler.register_handler(KEY_LEFT_ALT, self.previous_image) # 左箭头 (某些终端)
+        self.input_handler.register_handler(KEY_RIGHT_ALT, self.next_image)    # 右箭头 (某些终端)
         
         # 备用按键
         self.input_handler.register_handler('a', self.previous_image)  # a键代替左箭头
@@ -285,18 +287,20 @@ def main():
     args = parser.parse_args()
     
     # 检查chafa是否可用
-    import subprocess
-    try:
-        subprocess.run(['chafa', '--version'], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("错误: 未找到chafa命令")
-        print("请安装chafa: sudo pacman -S chafa (Arch Linux)")
+    from chafa_wrapper import ChafaWrapper
+    if not ChafaWrapper.check_chafa_available():
+        print(ERR_CHAFA_NOT_FOUND)
+        print(ERR_CHAFA_INSTALL_HINT)
         sys.exit(1)
     
     # 启动应用
     path = args.path if args.path else '.'
     app = PixelTerm(path, preload_enabled=args.preload_enabled)
-    app.run()
+    try:
+        app.run()
+    finally:
+        # 清理资源
+        app.file_browser.cleanup()
 
 
 if __name__ == "__main__":

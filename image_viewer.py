@@ -10,6 +10,7 @@ import sys
 from typing import Optional, Tuple
 from pathlib import Path
 from PIL import Image
+from chafa_wrapper import ChafaWrapper
 
 
 class ImageViewer:
@@ -18,7 +19,8 @@ class ImageViewer:
     def __init__(self, width: int = 80, height: int = 24):
         self.width = width
         self.height = height
-        self.supported_formats = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff'}
+        from constants import SUPPORTED_FORMATS
+        self.supported_formats = SUPPORTED_FORMATS
     
     def get_terminal_size(self) -> Tuple[int, int]:
         """获取终端大小"""
@@ -68,35 +70,13 @@ class ImageViewer:
                 print(rendered_output, end='')
                 return True
             
-            # 如果没有预渲染数据，使用chafa实时渲染
-            # 获取最优显示尺寸
-            display_width, display_height = self.get_optimal_chafa_size(scale)
-            
-            # 构建chafa命令，让chafa自动选择最佳格式和尺寸
-            cmd = [
-                'chafa',
-                '--color-space', 'rgb',
-                '--dither', 'none',
-                '--relative', 'off',     # 关闭相对定位，避免残留
-                '--optimize', '9',       # 启用所有优化
-                '--margin-right', '0',   # 右边距设为0
-                '--work', '9',           # 最高质量处理
-                filepath
-            ]
-            
-            # 只有在需要缩放时才添加尺寸参数
-            if display_width is not None and display_height is not None:
-                cmd.extend(['--size', f'{display_width}x{display_height}'])
-            
-            # 执行chafa命令并直接输出到stdout
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                # 直接输出，不进行额外处理
-                print(result.stdout, end='')
+            # 如果没有预渲染数据，使用ChafaWrapper实时渲染
+            rendered = ChafaWrapper.render_image(filepath, scale)
+            if rendered:
+                print(rendered, end='')
                 return True
-            else:
-                return False
+            
+            return False
                 
         except Exception:
             return False
