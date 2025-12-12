@@ -4,6 +4,8 @@
 
 A modern terminal image viewer based on chafa, allowing you to browse and view images directly in your terminal.
 
+> **⚡️ Looking for better performance?** Check out [PixelTerm-C](https://github.com/zouyonghe/PixelTerm-C) - a native C implementation with significantly faster image processing and lower memory usage!
+
 ## 🌟 Features
 
 - 🖼️ **Multi-format Support** - Supports JPG, PNG, GIF, BMP, WebP, TIFF and other mainstream image formats

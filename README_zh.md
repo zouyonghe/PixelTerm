@@ -4,6 +4,8 @@
 
 一个基于chafa的现代化终端图片浏览器，支持在终端中浏览和查看图片。
 
+> **⚡️ 追求更好性能？** 试试 [PixelTerm-C](https://github.com/zouyonghe/PixelTerm-C) - 原生 C 实现，图片处理速度显著更快，内存占用更低！
+
 ## 🌟 功能特性
 
 - 🖼️ **多格式支持** - 支持JPG、PNG、GIF、BMP、WebP、TIFF等主流图片格式
