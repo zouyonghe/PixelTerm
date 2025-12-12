@@ -42,15 +42,15 @@ class PixelTerm:
             if path_obj.is_file():
                 # 如果是文件，设置为图片文件
                 if not self.file_browser.set_image_file(path):
-                    print(f"无法打开图片文件: {path}")
+                    print(f"Cannot open image file: {path}")
                     sys.exit(1)
             elif path_obj.is_dir():
                 # 如果是目录，设置为目录
                 if not self.file_browser.set_directory(path):
-                    print(f"无法打开目录: {path}")
+                    print(f"Cannot open directory: {path}")
                     sys.exit(1)
             else:
-                print(f"错误: 路径不存在 {path}")
+                print(f"Error: Path does not exist {path}")
                 sys.exit(1)
         else:
             self.file_browser.set_directory('.')
@@ -167,7 +167,7 @@ class PixelTerm:
         if self.display_options.zoom_in():
             self.refresh_display()
         else:
-            self.interface.show_info("已达到最大缩放")
+            self.interface.show_info("Maximum zoom level reached")
         return True
     
     def zoom_out(self):
@@ -175,7 +175,7 @@ class PixelTerm:
         if self.display_options.zoom_out():
             self.refresh_display()
         else:
-            self.interface.show_info("已达到最小缩放")
+            self.interface.show_info("Minimum zoom level reached")
         return True
     
     def reset_zoom(self):
@@ -202,7 +202,7 @@ class PixelTerm:
         if self.file_browser.go_up_directory():
             self.refresh_display()
         else:
-            self.interface.show_info("已经在根目录")
+            self.interface.show_info("Already at root directory")
         return True
     
     def show_directory_list(self):
@@ -215,11 +215,11 @@ class PixelTerm:
                 if self.file_browser.enter_subdirectory(dirname):
                     self.refresh_display()
                 else:
-                    self.interface.show_error(f"无法进入目录: {dirname}")
+                    self.interface.show_error(f"Cannot enter directory: {dirname}")
             elif dirname:
-                self.interface.show_error(f"目录不存在: {dirname}")
+                self.interface.show_error(f"Directory does not exist: {dirname}")
         else:
-            self.interface.show_info("当前目录没有子目录")
+            self.interface.show_info("No subdirectories in current directory")
         
         self.refresh_display()
         return True
@@ -261,28 +261,28 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='PixelTerm - 终端图片浏览器',
+        description='PixelTerm - Terminal Image Viewer',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用示例:
-  %(prog)s                    # 浏览当前目录的图片
-  %(prog)s /path/to/images    # 浏览指定目录的图片
-  %(prog)s image.jpg          # 直接显示指定图片
-  %(prog)s --no-preload       # 禁用预加载以提高启动速度
-  %(prog)s --help             # 显示帮助信息
+Usage examples:
+  %(prog)s                    # Browse images in current directory
+  %(prog)s /path/to/images    # Browse images in specified directory
+  %(prog)s image.jpg          # Display specified image directly
+  %(prog)s --no-preload       # Disable preloading for faster startup
+  %(prog)s --help             # Show help information
 
-快捷键:
-  ←/→     上一张/下一张图片
-  a/d      备用左/右键
-  i        显示图片详细信息
-  q        退出程序
-  Ctrl+C   强制退出
+Shortcuts:
+  ←/→     Previous/Next image
+  a/d      Alternative left/right keys
+  i        Show detailed image information
+  q        Quit program
+  Ctrl+C   Force exit
         """
     )
     
-    parser.add_argument('path', nargs='?', help='图片文件或目录路径')
+    parser.add_argument('path', nargs='?', help='Image file or directory path')
     parser.add_argument('--no-preload', action='store_false', dest='preload_enabled', 
-                        help='禁用预加载功能（默认启用）')
+                        help='Disable preloading feature (enabled by default)')
     
     args = parser.parse_args()
     

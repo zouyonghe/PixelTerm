@@ -149,7 +149,7 @@ class ImageViewer:
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("用法: python image_viewer.py <图片路径>")
+        print("Usage: python image_viewer.py <image_path>")
         sys.exit(1)
     
     viewer = ImageViewer()

@@ -34,11 +34,11 @@ class FileBrowser:
         try:
             path = Path(directory).resolve()
             if not path.exists():
-                print(f"错误: 路径不存在 {directory}")
+                print(f"Error: Path does not exist {directory}")
                 return False
             
             if not path.is_dir():
-                print(f"错误: 不是目录 {directory}")
+                print(f"Error: Not a directory {directory}")
                 return False
             
             self.current_directory = path
@@ -46,7 +46,7 @@ class FileBrowser:
             return True
             
         except Exception as e:
-            print(f"设置目录时出错: {e}")
+            print(f"Error setting directory: {e}")
             return False
     
     def set_image_file(self, filepath: str) -> bool:
@@ -54,15 +54,15 @@ class FileBrowser:
         try:
             path = Path(filepath).resolve()
             if not path.exists():
-                print(f"错误: 文件不存在 {filepath}")
+                print(f"Error: File does not exist {filepath}")
                 return False
             
             if not path.is_file():
-                print(f"错误: 不是文件 {filepath}")
+                print(f"Error: Not a file {filepath}")
                 return False
             
             if not self.is_image_file(path):
-                print(f"错误: 不支持的图片格式 {filepath}")
+                print(f"Error: Unsupported image format {filepath}")
                 return False
             
             # 设置文件所在目录
@@ -86,7 +86,7 @@ class FileBrowser:
             return False
             
         except Exception as e:
-            print(f"设置图片文件时出错: {e}")
+            print(f"Error setting image file: {e}")
             return False
     
     def refresh_file_list(self):
@@ -107,7 +107,7 @@ class FileBrowser:
             self.preload_renders()
             
         except Exception as e:
-            print(f"读取目录时出错: {e}")
+            print(f"Error reading directory: {e}")
     
     def preload_renders(self):
         """预渲染图片"""
@@ -261,14 +261,16 @@ class FileBrowser:
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("用法: python file_browser.py <目录路径>")
+        print("Usage: python file_browser.py <directory_path>")
         sys.exit(1)
     
     browser = FileBrowser()
     if browser.set_directory(sys.argv[1]):
-        print(f"目录: {browser.get_directory_info()}")
-        print(f"图片数量: {browser.get_image_count()}")
-        if browser.get_image_count() > 0:
-            print(f"当前图片: {browser.get_current_image()}")
+        print(f"Directory: {browser.get_directory_info()}")
+    print(f"Image count: {browser.get_image_count()}")
+    
+    current = browser.get_current_image()
+    if current:
+        print(f"Current image: {current}")
     else:
-        print("无法设置目录")
+        print("Cannot set directory")

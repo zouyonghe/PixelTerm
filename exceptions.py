@@ -59,7 +59,7 @@ class ImageLoadError(PixelTermError):
     """图片加载异常"""
     
     def __init__(self, path: str, reason: str = ""):
-        message = f"无法加载图片: {path}"
+        message = f"Cannot load image: {path}"
         if reason:
             message += f" ({reason})"
         super().__init__(message)
@@ -69,7 +69,7 @@ class RenderError(PixelTermError):
     """渲染异常"""
     
     def __init__(self, path: str, reason: str = ""):
-        message = f"渲染失败: {path}"
+        message = f"Render failed: {path}"
         if reason:
             message += f" ({reason})"
         super().__init__(message)

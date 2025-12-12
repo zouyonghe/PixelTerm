@@ -35,9 +35,9 @@ KEY_RIGHT_ALT = '\x1bOC'
 KEY_CTRL_C = '\x03'
 
 # 错误消息
-ERR_CHAFA_NOT_FOUND = "错误: 未找到chafa命令"
-ERR_CHAFA_INSTALL_HINT = "请安装chafa: brew install chafa (macOS) 或 sudo apt-get install chafa (Ubuntu)"
-ERR_PATH_NOT_EXISTS = "错误: 路径不存在"
-ERR_NOT_DIRECTORY = "错误: 不是目录"
-ERR_NOT_FILE = "错误: 不是文件"
-ERR_UNSUPPORTED_FORMAT = "错误: 不支持的图片格式"
+ERR_CHAFA_NOT_FOUND = "Error: chafa command not found"
+ERR_CHAFA_INSTALL_HINT = "Please install chafa: brew install chafa (macOS) or sudo apt-get install chafa (Ubuntu)"
+ERR_PATH_NOT_EXISTS = "Error: Path does not exist"
+ERR_NOT_DIRECTORY = "Error: Not a directory"
+ERR_NOT_FILE = "Error: Not a file"
+ERR_UNSUPPORTED_FORMAT = "Error: Unsupported image format"

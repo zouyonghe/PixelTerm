@@ -73,7 +73,7 @@ class Interface:
         """显示帮助信息"""
         self.clear_screen()
         print(self.help_text)
-        print("\n按任意键继续...")
+        print("\nPress any key to continue...")
         self.wait_for_key()
     
     def wait_for_key(self):
@@ -87,12 +87,12 @@ class Interface:
         """显示状态栏"""
         print(f"\n{'='*60}")
         print(f"📁 {directory}")
-        print(f"🖼️  {current+1}/{total} | 🔍 {scale:.1f}x | 按 h 查看帮助")
+        print(f"🖼️  {current+1}/{total} | 🔍 {scale:.1f}x | Press h for help")
         print(f"{'='*60}")
     
     def show_file_list(self, files: list, current_index: int):
         """显示文件列表"""
-        print("\n📋 文件列表:")
+        print("\n📋 File list:")
         for i, file_info in enumerate(files):
             print(file_info)
     
@@ -120,13 +120,13 @@ class Interface:
         with self._terminal_mode_switch():
             try:
                 print(f"\n{'='*60}")
-                print(f"📸 图片详细信息")
+                print(f"📸 Image Details")
                 print(f"{'='*60}")
                 
-                # 基本信息
-                print(f"📁 文件名: {image_path.name}")
-                print(f"📂 路径: {image_path.parent}")
-                print(f"📄 索引: {current_index + 1}/{total_count}")
+                # Basic information
+                print(f"📁 Filename: {image_path.name}")
+                print(f"📂 Path: {image_path.parent}")
+                print(f"📄 Index: {current_index + 1}/{total_count}")
                 
                 # 文件大小
                 file_size = os.path.getsize(image_path)
@@ -138,50 +138,50 @@ class Interface:
                     size_str = f"{file_size / (1024 * 1024):.1f} MB"
                 else:
                     size_str = f"{file_size / (1024 * 1024 * 1024):.1f} GB"
-                print(f"💾 文件大小: {size_str}")
+                print(f"💾 File size: {size_str}")
                 
-                # 图片尺寸和格式信息
+                # Image dimensions and format information
                 try:
                     with Image.open(image_path) as img:
                         width, height = img.size
-                        print(f"📐 尺寸: {width} x {height} 像素")
-                        print(f"🎨 格式: {img.format}")
-                        print(f"🎭 颜色模式: {img.mode}")
+                        print(f"📐 Dimensions: {width} x {height} pixels")
+                        print(f"🎨 Format: {img.format}")
+                        print(f"🎭 Color mode: {img.mode}")
                         
-                        # 计算宽高比
+                        # Calculate aspect ratio
                         if height > 0:
                             aspect_ratio = width / height
-                            print(f"📏 宽高比: {aspect_ratio:.2f}")
+                            print(f"📏 Aspect ratio: {aspect_ratio:.2f}")
                         
-                        # 如果有EXIF信息，显示一些基本信息
+                        # If EXIF information exists, display basic info
                         if hasattr(img, '_getexif') and img._getexif():
                             exif = img._getexif()
                             if exif:
-                                print(f"📷 包含EXIF信息")
+                                print(f"📷 Contains EXIF information")
                 except Exception as e:
-                    print(f"❌ 无法读取图片信息: {e}")
+                    print(f"❌ Unable to read image information: {e}")
                 
                 print(f"{'='*60}")
                 
             except Exception as e:
-                print(f"\n❌ 显示信息时出错: {e}")
+                print(f"\n❌ Error displaying information: {e}")
     
     def show_directory_list(self, directories: list):
         """显示目录列表"""
         if not directories:
-            print("\n📁 当前目录没有子目录")
+            print("\n📁 No subdirectories in current directory")
             return
         
-        print("\n📁 子目录列表:")
+        print("\n📁 Subdirectory list:")
         for i, dirname in enumerate(directories):
             print(f"  {i+1}. {dirname}")
-        print("\n输入目录名进入，或按 Esc 取消:")
+        print("\nEnter directory name to enter, or press Esc to cancel:")
     
     def prompt_directory(self) -> Optional[str]:
         """提示输入目录名"""
         with self._terminal_mode_switch():
             try:
-                dirname = input("输入目录名: ").strip()
+                dirname = input("Enter directory name: ").strip()
                 return dirname if dirname else None
             except:
                 return None
@@ -190,7 +190,7 @@ class Interface:
         """确认退出"""
         with self._terminal_mode_switch():
             try:
-                response = input("\n确定要退出吗? (y/N): ").strip().lower()
+                response = input("\nAre you sure you want to exit? (y/N): ").strip().lower()
                 return response == 'y' or response == 'yes'
             except:
                 return False
@@ -199,8 +199,8 @@ class Interface:
         """显示错误信息"""
         with self._terminal_mode_switch():
             try:
-                print(f"\n❌ 错误: {message}")
-                input("按任意键继续...")
+                print(f"\n❌ Error: {message}")
+                input("Press any key to continue...")
             except:
                 pass
     
@@ -209,7 +209,7 @@ class Interface:
         with self._terminal_mode_switch():
             try:
                 print(f"\nℹ️  {message}")
-                input("按任意键继续...")
+                input("Press any key to continue...")
             except:
                 pass
 

@@ -54,7 +54,7 @@ class Config:
                     user_config = json.load(f)
                     self._merge_config(self.config, user_config)
         except Exception as e:
-            print(f"加载配置文件失败: {e}")
+            print(f"Failed to load configuration file: {e}")
     
     def save_config(self):
         """保存配置文件"""
@@ -65,7 +65,7 @@ class Config:
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"保存配置文件失败: {e}")
+            print(f"Failed to save configuration file: {e}")
     
     def _merge_config(self, base: Dict[str, Any], update: Dict[str, Any]):
         """递归合并配置"""
@@ -175,5 +175,5 @@ class DisplayOptions:
 
 if __name__ == "__main__":
     config = Config()
-    print("当前配置:")
+    print("Current configuration:")
     print(json.dumps(config.config, indent=2, ensure_ascii=False))
