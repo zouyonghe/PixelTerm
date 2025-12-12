@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 **依赖说明**:
 - **系统chafa**: 必须先安装系统的chafa库，这是核心依赖
-- **Python依赖**: 通过requirements.txt安装Pillow和chafa.py等Python包
+- **Python依赖**: 通过requirements.txt安装Pillow等Python包
 
 ### 基本使用
 

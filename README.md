@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 **Dependency Notes**:
 - **System chafa**: Must install the system chafa library first, this is the core dependency
-- **Python dependencies**: Install Pillow, chafa.py and other Python packages via requirements.txt
+- **Python dependencies**: Install Pillow and other Python packages via requirements.txt
 
 ### Basic Usage
 
