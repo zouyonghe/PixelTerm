@@ -23,7 +23,8 @@ class Interface:
 📋 快捷键:
   ←/→     Previous/Next image
   a/d     Alternative left/right keys
-  i       Show detailed image information
+  i       Show/hide image information
+  r       Delete current image
   q       Quit program
   Ctrl+C  Force exit
         """

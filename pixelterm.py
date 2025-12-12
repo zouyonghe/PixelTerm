@@ -34,6 +34,9 @@ class PixelTerm:
         # 按键序列缓冲区
         self.key_buffer = ""
         
+        # 信息显示状态
+        self.info_displayed = False
+        
         # 设置预加载状态
         self.file_browser.preload_enabled = preload_enabled
         
@@ -79,6 +82,9 @@ class PixelTerm:
         
         # 信息显示
         self.input_handler.register_handler('i', self.show_image_info)
+        
+        # 删除图片
+        self.input_handler.register_handler('r', self.delete_current_image)
     
     def signal_handler(self, signum, frame):
         """信号处理器"""
@@ -165,7 +171,8 @@ Usage examples:
 Shortcuts:
   ←/→        Previous/Next image
   a/d        Alternative left/right keys
-  i          Show detailed image information
+  i          Show/hide image information
+  r          Delete current image
   q          Quit program
   Ctrl+C     Force exit
             """)
@@ -180,12 +187,14 @@ Shortcuts:
     def next_image(self):
         """下一张图片"""
         if self.file_browser.next_image():
+            self.info_displayed = False  # 重置信息显示状态
             self.refresh_display(clear_first=True)
         return True
     
     def previous_image(self):
         """上一张图片"""
         if self.file_browser.previous_image():
+            self.info_displayed = False  # 重置信息显示状态
             self.refresh_display(clear_first=True)
         return True
     
@@ -216,10 +225,67 @@ Shortcuts:
     
     
     def show_image_info(self):
-        """显示图片信息"""
+        """显示/关闭图片信息"""
         current_image = self.file_browser.get_current_image()
-        if current_image:
+        if not current_image:
+            return True
+        
+        if self.info_displayed:
+            # 如果信息已显示，关闭信息并重新渲染图片
+            self.info_displayed = False
+            self.refresh_display(clear_first=True)
+        else:
+            # 显示图片信息
             self.interface.show_image_info(current_image, self.file_browser.get_image_count(), self.file_browser.current_index)
+            self.info_displayed = True
+        
+        return True
+    
+    def delete_current_image(self):
+        """删除当前图片并跳到下一张"""
+        current_image = self.file_browser.get_current_image()
+        if not current_image:
+            return True
+        
+        # 确认删除
+        with self.interface._terminal_mode_switch():
+            try:
+                print(f"\n确定要删除图片 '{current_image.name}' 吗? (y/N): ", end='', flush=True)
+                response = input().strip().lower()
+                if response != 'y' and response != 'yes':
+                    return True
+            except:
+                return True
+        
+        # 删除文件
+        try:
+            import os
+            os.remove(current_image)
+            
+            # 从文件列表中移除
+            self.file_browser.image_files.remove(current_image)
+            
+            # 如果删除后没有图片了，退出
+            if not self.file_browser.image_files:
+                print("没有更多图片了")
+                self.input_handler.stop()
+                return True
+            
+            # 如果当前索引超出了范围，调整索引
+            if self.file_browser.current_index >= len(self.file_browser.image_files):
+                self.file_browser.current_index = 0
+            
+            # 刷新显示
+            self.refresh_display(clear_first=True)
+            
+        except Exception as e:
+            with self.interface._terminal_mode_switch():
+                try:
+                    print(f"删除失败: {e}")
+                    input("按任意键继续...")
+                except:
+                    pass
+        
         return True
     
     def go_up_directory(self):
@@ -299,7 +365,8 @@ Usage examples:
 Shortcuts:
   ←/→        Previous/Next image
   a/d        Alternative left/right keys
-  i          Show detailed image information
+  i          Show/hide image information
+  r          Delete current image
   q          Quit program
   Ctrl+C     Force exit
         """
