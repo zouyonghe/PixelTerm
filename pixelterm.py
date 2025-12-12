@@ -272,11 +272,11 @@ Usage examples:
   %(prog)s --help             # Show help information
 
 Shortcuts:
-  ←/→     Previous/Next image
-  a/d     Alternative left/right keys
-  i       Show detailed image information
-  q       Quit program
-  Ctrl+C  Force exit
+  ←/→        Previous/Next image
+  a/d        Alternative left/right keys
+  i          Show detailed image information
+  q          Quit program
+  Ctrl+C     Force exit
         """
     )
     
