@@ -124,6 +124,8 @@ PixelTerm/
 
 MIT License - See LICENSE file for details
 
+**Note**: This project uses chafapy (LGPL-3.0+) which is a Python binding for Chafa (LGPL-3.0+). The LGPL components are separately licensed as noted in the LICENSE file.
+
 ---
 
 **PixelTerm** - Making terminals excellent image viewers! 🖼️

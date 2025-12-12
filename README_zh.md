@@ -124,6 +124,8 @@ PixelTerm/
 
 MIT License - 详见 LICENSE 文件
 
+**注意**: 本项目使用 chafapy (LGPL-3.0+)，它是 Chafa (LGPL-3.0+) 的 Python 绑定。LGPL 组件的许可证信息已在 LICENSE 文件中单独说明。
+
 ---
 
 **PixelTerm** - 让终端也能成为出色的图片浏览器！ 🖼️
