@@ -110,7 +110,7 @@ PixelTerm/
 - **开发语言**: Python 3.7+
 - **核心依赖**: chafa, Pillow
 - **代码规模**: 14个文件，1000+行代码
-- **开源协议**: MIT License
+- **开源协议**: LGPL-3.0 或更高版本
 - **仓库地址**: https://github.com/zouyonghe/PixelTerm
 
 ## 🎯 设计理念
@@ -122,9 +122,9 @@ PixelTerm/
 
 ## 📄 许可证
 
-MIT License - 详见 LICENSE 文件
+LGPL-3.0 或更高版本 - 详见 LICENSE 文件
 
-**注意**: 本项目使用 chafapy (LGPL-3.0+)，它是 Chafa (LGPL-3.0+) 的 Python 绑定。LGPL 组件的许可证信息已在 LICENSE 文件中单独说明。
+本项目采用与 Chafa 相同的许可证 (LGPLv3+)。
 
 ---
 

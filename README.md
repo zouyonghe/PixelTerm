@@ -110,7 +110,7 @@ PixelTerm/
 - **Language**: Python 3.7+
 - **Core Dependencies**: chafa, Pillow
 - **Code Scale**: 14 files, 1000+ lines of code
-- **License**: MIT License
+- **License**: LGPL-3.0 or later
 - **Repository**: https://github.com/zouyonghe/PixelTerm
 
 ## 🎯 Design Philosophy
@@ -122,9 +122,9 @@ PixelTerm/
 
 ## 📄 License
 
-MIT License - See LICENSE file for details
+LGPL-3.0 or later - See LICENSE file for details
 
-**Note**: This project uses chafapy (LGPL-3.0+) which is a Python binding for Chafa (LGPL-3.0+). The LGPL components are separately licensed as noted in the LICENSE file.
+This project is licensed under the same license as Chafa (LGPLv3+).
 
 ---
 
