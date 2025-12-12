@@ -273,10 +273,10 @@ Usage examples:
 
 Shortcuts:
   ←/→     Previous/Next image
-  a/d      Alternative left/right keys
-  i        Show detailed image information
-  q        Quit program
-  Ctrl+C   Force exit
+  a/d     Alternative left/right keys
+  i       Show detailed image information
+  q       Quit program
+  Ctrl+C  Force exit
         """
     )
     
