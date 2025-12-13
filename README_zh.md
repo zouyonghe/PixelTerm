@@ -2,9 +2,11 @@
 
 *English | [中文](README_zh.md)*
 
+> **⚠️ 实验性项目警告**: 此项目目前仅作为试验性项目维护，主要功能开发已集中在 [PixelTerm-C](https://github.com/zouyonghe/PixelTerm-C) 项目中。建议用户优先使用 C 语言版本以获得更好的性能和稳定性。
+
 一个基于chafa的现代化终端图片浏览器，支持在终端中浏览和查看图片。
 
-> **⚡️ 追求更好性能？** 试试 [PixelTerm-C](https://github.com/zouyonghe/PixelTerm-C) - 原生 C 实现，图片处理速度显著更快，内存占用更低！
+> **⚡️ 追求更好性能？** 试试 [PixelTerm-C](https://github.com/zouyonghe/PixelTerm-C) - 原生 C 实现，图片处理速度显著更快，内存占用更低！**这是当前主要的开发重点。**
 
 ## 🌟 功能特性
 
