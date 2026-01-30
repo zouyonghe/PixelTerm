@@ -326,6 +326,7 @@ Shortcuts:
     def quit(self):
         """Quit"""
         self.input_handler.stop()
+        print("\r", flush=True)
         return True
 
 
